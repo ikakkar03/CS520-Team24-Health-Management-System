@@ -19,3 +19,110 @@ This project is intended towards the following stakeholders:
 - **Pharmacists** can process e-prescriptions efficiently and manage medication inventory.  
 - **Administrators** can oversee system operations, ensure regulatory compliance, and manage user roles.  
 
+## Backend Setup Instructions
+
+### Prerequisites
+- Node.js (v14 or higher)
+- PostgreSQL (v12 or higher)
+- npm (Node Package Manager)
+
+### Database Setup
+1. Install PostgreSQL
+2. During installation:
+   - Set password for database superuser (postgres)
+   - Keep the default port (5432)
+3. Open pgAdmin
+4. Create a new database:
+   - Right-click on "Databases"
+   - Select "Create" > "Database"
+   - Enter database name: `healthcare_db`
+   - Click "Save"
+5. Initialize database schema:
+   - Right-click on `healthcare_db`
+   - Select "Query Tool"
+   - Copy and paste the contents of `backend/src/db/schema.sql`
+   - Click "Execute/Refresh"
+
+### Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file in the backend directory with the following content:
+   ```
+   PORT=5000
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_NAME=healthcare_db
+   DB_USER=postgres
+   DB_PASSWORD=your_postgres_password
+   JWT_SECRET=healthcare_system_secret_key_2024_secure_token_generation
+   ```
+   Replace `your_postgres_password` with the password you set during PostgreSQL installation.
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. The server should start and show:
+   - "Successfully connected to PostgreSQL database"
+   - "Server is running on port 5000"
+
+### API Testing
+You can test the API endpoints using Postman. Add the following requests:
+
+   #### Authentication API
+   - POST `http://localhost:5000/api/auth/register` - Register a new user
+   - POST `http://localhost:5000/api/auth/login` - Login user
+
+   Example Register request body:
+   ```json
+   {
+       "email": "test@example.com",
+       "password": "password123",
+       "role": "patient",
+       "firstName": "John",
+       "lastName": "Doe"
+   }
+   ```
+
+   Example Login request body:
+   ```json
+   {
+       "email": "test@example.com",
+       "password": "password123"
+   }
+   ```
+
+   After successful login, you'll receive a JWT token. To use this token for authenticated requests:
+   1. Copy the token from the login response
+   2. In Postman, add an "Authorization" header to your requests:
+      - Key: `Authorization`
+      - Value: `Bearer your_token_here`
+   
+
+   #### Doctors API
+   - GET `http://localhost:5000/api/doctors` - Get all doctors
+   - GET `http://localhost:5000/api/doctors/:id` - Get single doctor
+   - POST `http://localhost:5000/api/doctors` - Create doctor
+   - PUT `http://localhost:5000/api/doctors/:id` - Update doctor
+   - DELETE `http://localhost:5000/api/doctors/:id` - Delete doctor
+
+   Example POST request body:
+   ```json
+   {
+       "firstName": "John",
+       "lastName": "Doe",
+       "email": "john.doe@example.com",
+       "specialization": "Cardiology",
+       "phoneNumber": "123-456-7890"
+   }
+   ```
+
