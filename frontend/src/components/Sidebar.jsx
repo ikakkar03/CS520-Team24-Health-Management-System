@@ -4,15 +4,24 @@ import Button from "./Button";
 import { cn } from "../utils/cn";
 
 export default function Sidebar() {
-  const { logout } = useAuth();
-  const navItems = [
-    { to: '/dashboard/patient', label: 'Dashboard' },
-    { to: '/doctors', label: 'Doctors' },
-    { to: '/patients', label: 'Patients' },
-    { to: '/appointments', label: 'Appointments' },
-    { to: '/prescriptions', label: 'Prescriptions' },
-    { to: '/messages', label: 'Messages' },
-  ];
+  const { logout, user } = useAuth();
+
+  let navItems = [];
+  if (user?.role === "doctor") {
+    navItems = [
+      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/appointments', label: 'Appointments' },
+      { to: '/prescriptions', label: 'Prescriptions' },
+      { to: '/messages', label: 'Messages' },
+    ];
+  } else if (user?.role === "patient") {
+    navItems = [
+      { to: '/dashboard', label: 'Dashboard' },
+      { to: '/appointments', label: 'Appointments' },
+      { to: '/prescriptions', label: 'Prescriptions' },
+      { to: '/messages', label: 'Messages' },
+    ];
+  }
 
   return (
     <aside className="hidden w-64 flex-col bg-white p-4 shadow-lg dark:bg-gray-800 md:flex">

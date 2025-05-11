@@ -6,12 +6,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // mock login: any creds accepted
-  function login({ email }) {
+  // mock login: any creds accepted, use provided role
+  function login({ email, role }) {
     setLoading(true);
     // simulate async
     setTimeout(() => {
-      setUser({ email });
+      setUser({ email, role });
       setLoading(false);
     }, 300);
   }

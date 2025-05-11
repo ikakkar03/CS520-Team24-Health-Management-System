@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Card from "../components/Card";
-import Pescription from "../components/Pescription";
+import Pescription from "../components/doctor/dashboard/Pescription";
 
 export default function PrescriptionsList() {
   const [prescriptions, setPrescriptions] = useState([

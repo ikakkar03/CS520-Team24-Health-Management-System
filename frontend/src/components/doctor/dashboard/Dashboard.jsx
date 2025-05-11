@@ -36,4 +36,4 @@ const DoctorDashboard = () => {
   );
 };
 
-export default Dashboard;
+export default DoctorDashboard;

@@ -12,19 +12,19 @@ const initialConversations = [
     messages: [
       {
         id: 1,
-        sender: "me",
+        sender: "patient",
         text: "Hello, I need a refill on my prescription",
         time: "10:15 AM"
       },
       {
         id: 2,
-        sender: "doctor",
+        sender: "me",
         text: "I've sent the prescription to your pharmacy.",
         time: "10:17 AM"
       },
       {
         id: 3,
-        sender: "me",
+        sender: "patient",
         text: "Thank You, Doctor",
         time: "10:20 AM"
       }
@@ -32,7 +32,7 @@ const initialConversations = [
   }
 ];
 
-export default function MessagesList() {
+export default function MessageListDoctor() {
   const [conversations, setConversations] = useState(initialConversations);
   const [selectedId, setSelectedId] = useState(conversations[0].id);
   const [input, setInput] = useState("");
