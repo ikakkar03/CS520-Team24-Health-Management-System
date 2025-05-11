@@ -6,6 +6,7 @@ import { cn } from "../utils/cn";
 export default function Sidebar() {
   const { logout } = useAuth();
   const navItems = [
+    { to: '/dashboard/patient', label: 'Dashboard' },
     { to: '/doctors', label: 'Doctors' },
     { to: '/patients', label: 'Patients' },
     { to: '/appointments', label: 'Appointments' },
