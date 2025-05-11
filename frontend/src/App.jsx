@@ -6,6 +6,8 @@ import DoctorsList from "./pages/DoctorsList";
 import PatientsList from "./pages/PatientsList";
 import AppointmentsList from "./pages/AppointmentsList";
 import PrescriptionsList from "./pages/PrescriptionsList";
+import MessagesList from "./pages/MessagesList";
+
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -23,6 +25,8 @@ export default function App() {
           <Route path="patients" element={<PatientsList />} />
           <Route path="appointments" element={<AppointmentsList />} />
           <Route path="prescriptions" element={<PrescriptionsList />} />
+          <Route path="messages" element={<MessagesList />} />
+          <Route path="Tenehealth Consultations" element={<PrescriptionsList />} />
           <Route index element={<Navigate to="doctors" replace />} />
         </Route>
       )}

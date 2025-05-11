@@ -10,6 +10,7 @@ export default function Sidebar() {
     { to: '/patients', label: 'Patients' },
     { to: '/appointments', label: 'Appointments' },
     { to: '/prescriptions', label: 'Prescriptions' },
+    { to: '/messages', label: 'Messages' },
   ];
 
   return (
