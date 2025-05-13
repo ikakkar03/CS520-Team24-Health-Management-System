@@ -55,7 +55,8 @@ const Signup = () => {
     try {
       setLoading(true);
       await signup(
-        `${formData.firstName} ${formData.lastName}`,
+        formData.firstName,
+        formData.lastName,
         formData.email,
         formData.password,
         formData.role

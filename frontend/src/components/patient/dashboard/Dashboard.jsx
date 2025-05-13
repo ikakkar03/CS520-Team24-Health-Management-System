@@ -9,7 +9,7 @@ const PatientDashboard = () => {
       <h1 className="text-3xl font-bold mb-6">Patient Dashboard</h1>
       
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Welcome, {user?.name || 'Patient'}</h2>
+        <h2 className="text-xl font-semibold mb-4">Welcome, {user?.firstName || 'Patient'}</h2>
         <p className="text-gray-700 mb-4">
           This is your patient dashboard where you can manage your appointments, 
           view prescriptions, and communicate with your doctors.

@@ -1,10 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "./Button";
 import { cn } from "../utils/cn";
 
 export default function Sidebar() {
   const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   let navItems = [];
   if (user?.role === "doctor") {
@@ -38,7 +44,7 @@ export default function Sidebar() {
           {label}
         </Link>
       ))}
-      <Button className="mt-auto bg-red-500 text-white" onClick={logout}>
+      <Button className="mt-auto bg-red-500 text-white" onClick={handleLogout}>
         Logout
       </Button>
     </aside>

@@ -1,25 +1,39 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Card from "../components/Card";
 import Button from "../components/Button";
 import Input from "../components/Input";
-import { cn } from "../utils/cn";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "", role: "patient" });
+  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    
     if (!form.email || !form.password) {
       setError("Please enter email and password");
       return;
     }
-    // Mock login: accept any credentials with selected role
-    login({ ...form });
+
+    try {
+      setLoading(true);
+      const user = await login(form.email, form.password);
+      if (user.role === 'doctor') {
+        navigate("/doctor/dashboard");
+      } else {
+        navigate("/patient/dashboard");
+      }
+    } catch (err) {
+      setError(err.message || "Failed to login. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,44 +46,29 @@ export default function Login() {
             type="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+            required
           />
           <Input
             label="Password"
             type="password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
           />
-          
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Login as:</p>
-            <div className="flex space-x-2">
-              <div 
-                className={cn(
-                  "flex items-center space-x-2 cursor-pointer",
-                  form.role === "patient" && "font-bold"
-                )}
-                onClick={() => setForm({ ...form, role: "patient" })}
-              >
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-500"></span>
-                <span>Patient</span>
-              </div>
-              <div 
-                className={cn(
-                  "flex items-center space-x-2 cursor-pointer",
-                  form.role === "doctor" && "font-bold"
-                )}
-                onClick={() => setForm({ ...form, role: "doctor" })}
-              >
-                <span className="inline-block h-2 w-2 rounded-full bg-blue-500"></span>
-                <span>Doctor</span>
-              </div>
-            </div>
-          </div>
-          
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full bg-blue-600 text-white">
-            Login
+          <Button 
+            type="submit" 
+            className="w-full bg-blue-600 text-white"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
+          <p className="text-center text-sm text-gray-600">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-blue-600 hover:text-blue-500">
+              Sign up
+            </Link>
+          </p>
         </form>
       </Card>
     </div>
