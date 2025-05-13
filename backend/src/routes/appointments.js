@@ -170,12 +170,19 @@ router.put('/:id',
 // Delete appointment
 router.delete('/:id', async (req, res) => {
   try {
-    const result = await pool.query('DELETE FROM appointments WHERE id = $1 RETURNING *', [req.params.id]);
-    
-    if (result.rows.length === 0) {
+    // First check if the appointment exists
+    const appointmentCheck = await pool.query(
+      'SELECT * FROM appointments WHERE id = $1',
+      [req.params.id]
+    );
+
+    if (appointmentCheck.rows.length === 0) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
 
+    // Delete the appointment
+    await pool.query('DELETE FROM appointments WHERE id = $1', [req.params.id]);
+    
     res.json({ message: 'Appointment deleted successfully' });
   } catch (error) {
     console.error('Error deleting appointment:', error);

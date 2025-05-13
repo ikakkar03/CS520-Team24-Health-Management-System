@@ -230,11 +230,38 @@ export default function AppointmentsList() {
     }
   };
 
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to delete this appointment?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/appointments/${appointmentId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to delete appointment');
+      }
+
+      // Remove the deleted appointment from the state
+      setAppointments(prevAppointments => 
+        prevAppointments.filter(appointment => appointment.id !== appointmentId)
+      );
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      setError(error.message || 'Failed to delete appointment');
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">Appointments</h2>
+    <div className="container mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Appointments</h1>
       
-      <Card className="p-6">
+      {/* Create Appointment Form */}
+      <div className="bg-white dark:bg-dark-bg rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4">Create New Appointment</h2>
         <form onSubmit={handleCreateAppointment} className="space-y-4">
           {error && (
             <div className="text-red-500 text-sm mb-4">
@@ -301,40 +328,54 @@ export default function AppointmentsList() {
             Create Appointment
           </button>
         </form>
-      </Card>
+      </div>
 
-      <div className="mt-8">
-        <h3 className="text-xl font-semibold mb-4">Upcoming Appointments</h3>
-        <div className="space-y-4">
-          {appointments.map((appointment) => (
-            <Card key={appointment.id} className="p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-medium">
-                    {user?.role === "patient"
-                      ? `Dr. ${appointment.doctor_first_name} ${appointment.doctor_last_name}`
-                      : `${appointment.patient_first_name} ${appointment.patient_last_name}`}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(appointment.appointment_date).toLocaleString()}
-                  </p>
-                  {appointment.notes && (
-                    <p className="text-sm text-gray-600 mt-2">{appointment.notes}</p>
-                  )}
+      {/* Upcoming Appointments */}
+      <div className="bg-white dark:bg-dark-bg rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4">Upcoming Appointments</h2>
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        {appointments.length === 0 ? (
+          <p className="text-gray-600 dark:text-gray-400">No upcoming appointments</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {appointments.map((appointment) => (
+              <div key={appointment.id} className="bg-gray-50 dark:bg-dark-bg-secondary rounded-lg p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-medium">
+                      {user.role === 'patient' ? (
+                        `Dr. ${appointment.doctor_first_name} ${appointment.doctor_last_name}`
+                      ) : (
+                        `${appointment.patient_first_name} ${appointment.patient_last_name}`
+                      )}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {new Date(appointment.appointment_date).toLocaleString()}
+                    </p>
+                    {appointment.notes && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                        Notes: {appointment.notes}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAppointment(appointment.id)}
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    title="Delete appointment"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </div>
-                <span className={`px-2 py-1 rounded text-sm ${
-                  appointment.status === "scheduled"
-                    ? "bg-blue-100 text-blue-800"
-                    : appointment.status === "completed"
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}>
-                  {appointment.status}
-                </span>
               </div>
-            </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

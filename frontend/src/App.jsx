@@ -13,6 +13,8 @@ import PatientDashboard from "./components/patient/dashboard/Dashboard";
 import DoctorDashboard from "./components/doctor/dashboard/Dashboard";
 import PrescriptionPatient from "./components/patient/dashboard/Pescription";
 import MessageListDoctor from "./pages/MessageListDoctor";
+// import PatientPrescriptions from "./pages/PatientPrescriptions";
+// import Profile from "./pages/Profile";
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth();
@@ -63,6 +65,8 @@ export default function App() {
               <Route path="appointments" element={<AppointmentsList />} />
               <Route path="prescriptions" element={<PrescriptionPatient />} />
               <Route path="messages" element={<MessagesList />} />
+              {/* <Route path="my-prescriptions" element={<PatientPrescriptions />} />
+              <Route path="profile" element={<Profile />} /> */}
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </>
