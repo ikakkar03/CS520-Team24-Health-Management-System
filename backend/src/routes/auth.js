@@ -20,7 +20,12 @@ router.post('/register',
     body('password').isLength({ min: 6 }),
     body('role').isIn(['patient', 'doctor', 'admin']),
     body('firstName').notEmpty(),
-    body('lastName').notEmpty()
+    body('lastName').notEmpty(),
+    body('dateOfBirth').if(body('role').equals('patient')).isDate(),
+    body('gender').if(body('role').equals('patient')).notEmpty(),
+    body('phoneNumber').if(body('role').equals('patient')).notEmpty(),
+    body('specialization').if(body('role').equals('doctor')).notEmpty(),
+    body('phoneNumber').if(body('role').equals('doctor')).notEmpty()
   ],
   async (req, res) => {
     try {
@@ -29,7 +34,17 @@ router.post('/register',
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password, role, firstName, lastName } = req.body;
+      const { 
+        email, 
+        password, 
+        role, 
+        firstName, 
+        lastName, 
+        dateOfBirth, 
+        gender, 
+        phoneNumber,
+        specialization 
+      } = req.body;
 
       // Check if user already exists
       const userExists = await pool.query(
@@ -41,17 +56,74 @@ router.post('/register',
         return res.status(400).json({ message: 'User already exists' });
       }
 
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      // Start a transaction
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
 
-      // Insert new user
-      const result = await pool.query(
-        'INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, first_name, last_name',
-        [email, hashedPassword, role, firstName, lastName]
-      );
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-      res.status(201).json(result.rows[0]);
+        // Insert new user
+        const userResult = await client.query(
+          'INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, first_name, last_name',
+          [email, hashedPassword, role, firstName, lastName]
+        );
+
+        // If user is a patient, create a patient record
+        if (role === 'patient') {
+          await client.query(
+            'INSERT INTO patients (first_name, last_name, email, date_of_birth, gender, phone_number) VALUES ($1, $2, $3, $4, $5, $6)',
+            [firstName, lastName, email, dateOfBirth, gender, phoneNumber]
+          );
+        }
+        // If user is a doctor, create a doctor record
+        else if (role === 'doctor') {
+          console.log('Creating doctor record:', {
+            firstName,
+            lastName,
+            email,
+            specialization,
+            phoneNumber
+          });
+          await client.query(
+            'INSERT INTO doctors (first_name, last_name, email, specialization, phone_number) VALUES ($1, $2, $3, $4, $5)',
+            [firstName, lastName, email, specialization, phoneNumber]
+          );
+        }
+
+        await client.query('COMMIT');
+
+        // Generate JWT token
+        const token = jwt.sign(
+          { 
+            id: userResult.rows[0].id,
+            email: userResult.rows[0].email,
+            role: userResult.rows[0].role,
+            firstName: userResult.rows[0].first_name,
+            lastName: userResult.rows[0].last_name
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: '24h' }
+        );
+
+        res.status(201).json({
+          token,
+          user: {
+            id: userResult.rows[0].id,
+            email: userResult.rows[0].email,
+            role: userResult.rows[0].role,
+            firstName: userResult.rows[0].first_name,
+            lastName: userResult.rows[0].last_name
+          }
+        });
+      } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
     } catch (error) {
       console.error('Error registering user:', error);
       res.status(500).json({ message: 'Server error' });

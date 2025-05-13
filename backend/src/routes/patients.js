@@ -22,6 +22,44 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Search patients by name or email
+router.get('/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    const result = await pool.query(
+      `SELECT id, first_name, last_name, email, date_of_birth, gender, phone_number 
+       FROM patients 
+       WHERE LOWER(first_name) LIKE LOWER($1) 
+       OR LOWER(last_name) LIKE LOWER($1) 
+       OR LOWER(email) LIKE LOWER($1)
+       LIMIT 10`,
+      [`%${query}%`]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching patients:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get patient by email
+router.get('/email/:email', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM patients WHERE email = $1', [req.params.email]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching patient by email:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get single patient
 router.get('/:id', async (req, res) => {
   try {

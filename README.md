@@ -126,3 +126,29 @@ You can test the API endpoints using Postman. Add the following requests:
    }
    ```
 
+### Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. The application will be available at `http://localhost:5173`
+
+Note: Make sure the backend server is running before starting the frontend application.
+
+### Troubleshooting
+- If you get "Error: connect ECONNREFUSED 127.0.0.1:5000", make sure the backend server is running
+- If you get database connection errors, verify your PostgreSQL credentials in the `.env` file
+- Make sure PostgreSQL service is running on your system
+- If the frontend can't connect to the backend, ensure both servers are running and the backend URL is correctly configured
+

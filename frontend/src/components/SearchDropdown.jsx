@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
+// Add the backend base URL
+const BACKEND_URL = 'http://localhost:5000';
+
 export default function SearchDropdown({ 
   type, // 'patient' or 'doctor'
   onSelect,
@@ -13,6 +16,11 @@ export default function SearchDropdown({
   const [showDropdown, setShowDropdown] = useState(false);
   const [error, setError] = useState(null);
 
+  // Debug log when query changes
+  useEffect(() => {
+    console.log('Query changed:', query);
+  }, [query]);
+
   useEffect(() => {
     const searchItems = async () => {
       if (query.length < 2) {
@@ -23,27 +31,39 @@ export default function SearchDropdown({
       setIsLoading(true);
       setError(null);
       try {
+        // Use the correct endpoint based on type with full backend URL
         const endpoint = type === 'patient' 
-          ? `/api/prescriptions/search-patients?query=${encodeURIComponent(query)}`
-          : `/api/doctors/search?query=${encodeURIComponent(query)}`;
+          ? `${BACKEND_URL}/api/patients/search?query=${encodeURIComponent(query)}`
+          : `${BACKEND_URL}/api/doctors/search?query=${encodeURIComponent(query)}`;
         
+        console.log('Making search request to:', endpoint);
         const response = await axios.get(endpoint);
-        // Ensure results is always an array
-        setResults(Array.isArray(response.data) ? response.data : []);
+        console.log('Received search results:', response.data);
+        
+        if (!Array.isArray(response.data)) {
+          console.error('Expected array but received:', response.data);
+          setError('Invalid response format');
+          setResults([]);
+          return;
+        }
+
+        setResults(response.data);
       } catch (error) {
-        console.error('Error searching:', error);
-        setError('Failed to fetch results');
+        console.error('Search error:', error.response || error);
+        setError(error.response?.data?.message || 'Failed to fetch results');
         setResults([]);
       } finally {
         setIsLoading(false);
       }
     };
 
+    // Debounce the search to avoid too many API calls
     const debounceTimer = setTimeout(searchItems, 300);
     return () => clearTimeout(debounceTimer);
   }, [query, type]);
 
   const handleSelect = (item) => {
+    console.log('Selected item:', item);
     onSelect(item);
     setQuery(`${item.first_name} ${item.last_name}`);
     setShowDropdown(false);
@@ -55,10 +75,19 @@ export default function SearchDropdown({
         type="text"
         value={query}
         onChange={(e) => {
-          setQuery(e.target.value);
+          const newQuery = e.target.value;
+          console.log('Input changed:', newQuery);
+          setQuery(newQuery);
           setShowDropdown(true);
         }}
-        onFocus={() => setShowDropdown(true)}
+        onFocus={() => {
+          console.log('Input focused');
+          setShowDropdown(true);
+        }}
+        onBlur={() => {
+          // Delay hiding dropdown to allow for click events
+          setTimeout(() => setShowDropdown(false), 200);
+        }}
         placeholder={placeholder}
         className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
