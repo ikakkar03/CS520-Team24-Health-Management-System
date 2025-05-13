@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import LandingPage from "./pages/LandingPage";
+import Signup from "./pages/Signup";
 // import DoctorsList from "./pages/DoctorsList";
 // import PatientsList from "./pages/PatientsList";
 import AppointmentsList from "./pages/AppointmentsList";
@@ -11,6 +13,14 @@ import PatientDashboard from "./components/patient/dashboard/Dashboard";
 import DoctorDashboard from "./components/doctor/dashboard/Dashboard";
 import PrescriptionPatient from "./components/patient/dashboard/Pescription";
 import MessageListDoctor from "./pages/MessageListDoctor";
+
+const ProtectedRoute = ({ children }) => {
+  const { user } = useAuth();
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -25,7 +35,9 @@ export default function App() {
 
   return (
     <Routes>
-      {/* Public */}
+      {/* Public Routes */}
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/signup" element={<Signup />} />
       {!user && <Route path="/login" element={<Login />} />}
 
       {/* Private: wrap with Layout (which includes Sidebar) */}
@@ -59,7 +71,7 @@ export default function App() {
       )}
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to={user ? getDashboardRoute(user.role) : "/login"} replace />} />
+      <Route path="*" element={<Navigate to={user ? getDashboardRoute(user.role) : "/"} replace />} />
     </Routes>
   );
 }
