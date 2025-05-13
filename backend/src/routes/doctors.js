@@ -22,6 +22,31 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Search doctors by name, email, or specialization
+router.get('/search', async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+
+    const result = await pool.query(
+      `SELECT id, first_name, last_name, email, specialization 
+       FROM doctors 
+       WHERE LOWER(first_name) LIKE LOWER($1) 
+       OR LOWER(last_name) LIKE LOWER($1) 
+       OR LOWER(email) LIKE LOWER($1)
+       OR LOWER(specialization) LIKE LOWER($1)
+       LIMIT 10`,
+      [`%${query}%`]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error searching doctors:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // Get single doctor
 router.get('/:id', async (req, res) => {
   try {

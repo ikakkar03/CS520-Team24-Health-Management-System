@@ -4,6 +4,9 @@ const cors = require('cors');
 const { Pool } = require('pg');
 const authRoutes = require('./routes/auth');
 const doctorsRoutes = require('./routes/doctors');
+const patientsRoutes = require('./routes/patients');
+const appointmentsRoutes = require('./routes/appointments');
+const prescriptionsRoutes = require('./routes/prescriptions');
 
 const app = express();
 
@@ -32,6 +35,9 @@ pool.connect((err, client, release) => {
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorsRoutes);
+app.use('/api/patients', patientsRoutes);
+app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/prescriptions', prescriptionsRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
