@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Search doctors by name, email, or specialization
+// Search doctors by name or email
 router.get('/search', async (req, res) => {
   try {
     const { query } = req.query;
@@ -31,18 +31,31 @@ router.get('/search', async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT id, first_name, last_name, email, specialization 
+      `SELECT id, first_name, last_name, email, specialization, phone_number 
        FROM doctors 
        WHERE LOWER(first_name) LIKE LOWER($1) 
        OR LOWER(last_name) LIKE LOWER($1) 
        OR LOWER(email) LIKE LOWER($1)
-       OR LOWER(specialization) LIKE LOWER($1)
        LIMIT 10`,
       [`%${query}%`]
     );
     res.json(result.rows);
   } catch (error) {
     console.error('Error searching doctors:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get doctor by email
+router.get('/email/:email', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM doctors WHERE email = $1', [req.params.email]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching doctor by email:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

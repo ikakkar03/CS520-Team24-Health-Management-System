@@ -31,15 +31,30 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const signup = async (firstName, lastName, email, password, role) => {
-    console.log('Signing up to:', `${API_URL}/api/auth/register`);
+
+  const signup = async (firstName, lastName, email, password, role, dateOfBirth, gender, phoneNumber, specialization) => {
     try {
-      const response = await axios.post('/api/auth/register', {
+      console.log('Attempting to register user:', { 
+        firstName, 
+        lastName, 
+        email, 
+        role,
+        dateOfBirth,
+        gender,
+        phoneNumber,
+        specialization
+      });
+      
+      const response = await axios.post(`${API_URL}/api/auth/register`, {
         firstName,
         lastName,
         email,
         password,
         role,
+        dateOfBirth,
+        gender,
+        phoneNumber,
+        specialization
       });
       console.log('Register response:', response.data);
 

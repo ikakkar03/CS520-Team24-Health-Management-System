@@ -23,7 +23,7 @@ router.post(
     body('password').isLength({ min: 6 }),
     body('role').isIn(['patient', 'doctor', 'admin']),
     body('firstName').notEmpty(),
-    body('lastName').notEmpty(),
+    body('lastName').notEmpty()
   ],
   async (req, res) => {
     try {
@@ -33,7 +33,17 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { email, password, role, firstName, lastName } = req.body;
+      const { 
+        email, 
+        password, 
+        role, 
+        firstName, 
+        lastName, 
+        dateOfBirth, 
+        gender, 
+        phoneNumber,
+        specialization 
+      } = req.body;
 
       // Check for existing user
       const exists = await pool.query(
@@ -44,36 +54,22 @@ router.post(
         return res.status(400).json({ message: 'User already exists' });
       }
 
+      // Start a transaction
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+
       // Hash password
       const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(password, salt);
+      const hashedPassword = await bcrypt.hash(password, salt);
 
-      // Insert into users
-      const userResult = await pool.query(
-        `INSERT INTO users (email, password_hash, role, first_name, last_name)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, email, role, first_name AS "firstName", last_name AS "lastName"`,
-        [email, passwordHash, role, firstName, lastName]
+      // Insert new user
+      const result = await pool.query(
+        'INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, role, first_name, last_name',
+        [email, hashedPassword, role, firstName, lastName]
       );
-      const newUser = userResult.rows[0];
 
-      // ALSO insert into patients or doctors
-      if (role === 'patient') {
-        await pool.query(
-          `INSERT INTO patients (id, first_name, last_name, email, date_of_birth, gender, phone_number)
-           VALUES ($1, $2, $3, $4, CURRENT_DATE, '', '')`,
-          [newUser.id, firstName, lastName, email]
-        );
-      } else if (role === 'doctor') {
-        await pool.query(
-          `INSERT INTO doctors (id, first_name, last_name, email, specialization, phone_number)
-           VALUES ($1, $2, $3, $4, '', '')`,
-          [newUser.id, firstName, lastName, email]
-        );
-      }
-
-      // Return the new user (without password)
-      res.status(201).json(newUser);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error registering user:', error);
       res.status(500).json({ message: 'Server error' });

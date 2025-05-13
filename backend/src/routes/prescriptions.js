@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Get prescriptions for a specific doctor
+// Get all prescriptions for a doctor
 router.get('/doctor/:doctorId', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -67,12 +67,12 @@ router.get('/doctor/:doctorId', async (req, res) => {
     `, [req.params.doctorId]);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching doctor prescriptions:', error);
+    console.error('Error fetching prescriptions:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// Get prescriptions for a specific patient
+// Get all prescriptions for a patient
 router.get('/patient/:patientId', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -85,7 +85,7 @@ router.get('/patient/:patientId', async (req, res) => {
     `, [req.params.patientId]);
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching patient prescriptions:', error);
+    console.error('Error fetching prescriptions:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -95,13 +95,8 @@ router.post('/',
   [
     body('doctorId').isInt(),
     body('patientId').isInt(),
-    body('appointmentId').optional().isInt(),
     body('medications').isArray(),
-    body('medications.*.medicationName').notEmpty(),
-    body('medications.*.dosage').notEmpty(),
-    body('medications.*.frequency').notEmpty(),
-    body('medications.*.duration').notEmpty(),
-    body('instructions').optional()
+    body('notes').optional()
   ],
   async (req, res) => {
     try {
@@ -110,7 +105,7 @@ router.post('/',
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { doctorId, patientId, appointmentId, medications, instructions } = req.body;
+      const { doctorId, patientId, medications, notes } = req.body;
       
       // Verify doctor exists
       const doctorCheck = await pool.query('SELECT * FROM doctors WHERE id = $1', [doctorId]);
@@ -124,59 +119,41 @@ router.post('/',
         return res.status(404).json({ message: 'Patient not found' });
       }
 
-      // If appointmentId is provided, verify appointment exists and belongs to the doctor and patient
-      if (appointmentId) {
-        const appointmentCheck = await pool.query(
-          'SELECT * FROM appointments WHERE id = $1 AND doctor_id = $2 AND patient_id = $3',
-          [appointmentId, doctorId, patientId]
-        );
-        if (appointmentCheck.rows.length === 0) {
-          return res.status(404).json({ message: 'Appointment not found or does not belong to the specified doctor and patient' });
-        }
-      }
-
-      // Create prescription
-      const prescriptionResult = await pool.query(
-        'INSERT INTO prescriptions (doctor_id, patient_id, appointment_id, instructions) VALUES ($1, $2, $3, $4) RETURNING *',
-        [doctorId, patientId, appointmentId, instructions]
+      const result = await pool.query(
+        'INSERT INTO prescriptions (doctor_id, patient_id, medications, notes) VALUES ($1, $2, $3, $4) RETURNING *',
+        [doctorId, patientId, medications, notes]
       );
 
-      const prescription = prescriptionResult.rows[0];
-
-      // Add medications
-      for (const medication of medications) {
-        await pool.query(
-          'INSERT INTO prescription_medications (prescription_id, medication_name, dosage, frequency, duration) VALUES ($1, $2, $3, $4, $5)',
-          [prescription.id, medication.medicationName, medication.dosage, medication.frequency, medication.duration]
-        );
-      }
-
-      // Get the complete prescription with medications
-      const completePrescription = await pool.query(`
-        SELECT p.*, 
-          d.first_name as doctor_first_name, d.last_name as doctor_last_name,
-          pt.first_name as patient_first_name, pt.last_name as patient_last_name,
-          json_agg(json_build_object(
-            'medicationName', pm.medication_name,
-            'dosage', pm.dosage,
-            'frequency', pm.frequency,
-            'duration', pm.duration
-          )) as medications
-        FROM prescriptions p
-        LEFT JOIN doctors d ON p.doctor_id = d.id
-        LEFT JOIN patients pt ON p.patient_id = pt.id
-        LEFT JOIN prescription_medications pm ON p.id = pm.prescription_id
-        WHERE p.id = $1
-        GROUP BY p.id, d.first_name, d.last_name, pt.first_name, pt.last_name
-      `, [prescription.id]);
-
-      res.status(201).json(completePrescription.rows[0]);
+      res.status(201).json(result.rows[0]);
     } catch (error) {
       console.error('Error creating prescription:', error);
       res.status(500).json({ message: 'Server error' });
     }
   }
 );
+
+// Delete prescription
+router.delete('/:id', async (req, res) => {
+  try {
+    // First check if the prescription exists
+    const prescriptionCheck = await pool.query(
+      'SELECT * FROM prescriptions WHERE id = $1',
+      [req.params.id]
+    );
+
+    if (prescriptionCheck.rows.length === 0) {
+      return res.status(404).json({ message: 'Prescription not found' });
+    }
+
+    // Delete the prescription
+    await pool.query('DELETE FROM prescriptions WHERE id = $1', [req.params.id]);
+    
+    res.json({ message: 'Prescription deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting prescription:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Get single prescription with medications
 router.get('/:id', async (req, res) => {

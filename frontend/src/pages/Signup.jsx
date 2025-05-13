@@ -11,7 +11,13 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'patient' // default role
+    role: 'patient', // default role
+    // Patient-specific fields
+    dateOfBirth: '',
+    gender: '',
+    phoneNumber: '',
+    // Doctor-specific fields
+    specialization: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,6 +47,20 @@ const Signup = () => {
       setError('Please enter a valid email address');
       return false;
     }
+
+    // Validate role-specific fields
+    if (formData.role === 'patient') {
+      if (!formData.dateOfBirth || !formData.gender || !formData.phoneNumber) {
+        setError('Please fill in all required patient information');
+        return false;
+      }
+    } else if (formData.role === 'doctor') {
+      if (!formData.specialization || !formData.phoneNumber) {
+        setError('Please fill in all required doctor information');
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -59,7 +79,11 @@ const Signup = () => {
         formData.lastName,
         formData.email,
         formData.password,
-        formData.role
+        formData.role,
+        formData.dateOfBirth,
+        formData.gender,
+        formData.phoneNumber,
+        formData.specialization
       );
       navigate('/dashboard');
     } catch (err) {
@@ -197,6 +221,87 @@ const Signup = () => {
                   <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Patient-specific fields */}
+            {formData.role === 'patient' && (
+              <>
+                <div>
+                  <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Date of Birth
+                  </label>
+                  <div className="mt-1">
+                    <input
+                      id="dateOfBirth"
+                      name="dateOfBirth"
+                      type="date"
+                      required
+                      value={formData.dateOfBirth}
+                      onChange={handleChange}
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-dark-bg dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Gender
+                  </label>
+                  <div className="mt-1">
+                    <select
+                      id="gender"
+                      name="gender"
+                      required
+                      value={formData.gender}
+                      onChange={handleChange}
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-dark-bg dark:text-white"
+                    >
+                      <option value="">Select gender</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Doctor-specific fields */}
+            {formData.role === 'doctor' && (
+              <div>
+                <label htmlFor="specialization" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Specialization
+                </label>
+                <div className="mt-1">
+                  <input
+                    id="specialization"
+                    name="specialization"
+                    type="text"
+                    required
+                    value={formData.specialization}
+                    onChange={handleChange}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-dark-bg dark:text-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Common field for both roles */}
+            <div>
+              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Phone Number
+              </label>
+              <div className="mt-1">
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  type="tel"
+                  required
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-dark-bg dark:text-white"
+                />
               </div>
             </div>
 
