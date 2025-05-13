@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { API_URL } from '../constants';
 
 const SocketContext = createContext();
 
@@ -19,7 +20,7 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       // Connect to WebSocket server
-      const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:8000', {
+      const newSocket = io(import.meta.env.VITE_API_URL || API_URL, {
         auth: {
           token: localStorage.getItem('token')
         }
