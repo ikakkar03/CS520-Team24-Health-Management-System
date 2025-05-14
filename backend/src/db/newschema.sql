@@ -33,3 +33,7 @@ SELECT id, medication_name, dosage, frequency, duration
   DROP COLUMN dosage,
   DROP COLUMN frequency,
   DROP COLUMN duration;
+
+
+ALTER TABLE prescriptions
+    ADD COLUMN notes TEXT;
