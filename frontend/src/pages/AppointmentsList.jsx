@@ -4,9 +4,8 @@ import Button from "../components/Button";
 import BookingCalendar from "../components/BookingCalender";
 import SearchDropdown from "../components/SearchDropdown";
 import { useAuth } from "../context/AuthContext";
+import { API_URL } from '../constants';
 
-// Add the backend base URL
-const BACKEND_URL = 'http://localhost:5000';
 
 export default function AppointmentsList() {
   const { user } = useAuth();
@@ -23,8 +22,8 @@ export default function AppointmentsList() {
   const fetchAppointments = async () => {
     try {
       const endpoint = user?.role === 'patient' 
-        ? `${BACKEND_URL}/api/appointments/patient/${patientId}`
-        : `${BACKEND_URL}/api/appointments/doctor/${doctorId}`;
+        ? `${API_URL}/api/appointments/patient/${patientId}`
+        : `${API_URL}/api/appointments/doctor/${doctorId}`;
       
       const response = await fetch(endpoint);
       if (!response.ok) {
@@ -43,7 +42,7 @@ export default function AppointmentsList() {
     const fetchIds = async () => {
       try {
         if (user?.role === 'patient') {
-          const response = await fetch(`${BACKEND_URL}/api/patients/email/${user.email}`);
+          const response = await fetch(`${API_URL}/api/patients/email/${user.email}`);
           if (!response.ok) {
             throw new Error('Failed to fetch patient information');
           }
@@ -52,7 +51,7 @@ export default function AppointmentsList() {
           setPatientId(patientData.id);
         } else if (user?.role === 'doctor') {
           console.log('Fetching doctor data for email:', user.email);
-          const response = await fetch(`${BACKEND_URL}/api/doctors/email/${user.email}`);
+          const response = await fetch(`${API_URL}/api/doctors/email/${user.email}`);
           console.log('Doctor fetch response status:', response.status);
           if (!response.ok) {
             const errorText = await response.text();
@@ -193,7 +192,7 @@ export default function AppointmentsList() {
 
       console.log('Sending appointment data:', appointmentData);
 
-      const response = await fetch(`${BACKEND_URL}/api/appointments`, {
+      const response = await fetch(`${API_URL}/api/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -236,7 +235,7 @@ export default function AppointmentsList() {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL}/api/appointments/${appointmentId}`, {
+      const response = await fetch(`${API_URL}/api/appointments/${appointmentId}`, {
         method: 'DELETE',
       });
 

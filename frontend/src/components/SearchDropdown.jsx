@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
-// Add the backend base URL
-const BACKEND_URL = 'http://localhost:5000';
+import { API_URL } from '../constants';
 
 export default function SearchDropdown({ 
   type, // 'patient' or 'doctor'
@@ -33,8 +31,8 @@ export default function SearchDropdown({
       try {
         // Use the correct endpoint based on type with full backend URL
         const endpoint = type === 'patient' 
-          ? `${BACKEND_URL}/api/patients/search?query=${encodeURIComponent(query)}`
-          : `${BACKEND_URL}/api/doctors/search?query=${encodeURIComponent(query)}`;
+          ? `${API_URL}/api/patients/search?query=${encodeURIComponent(query)}`
+          : `${API_URL}/api/doctors/search?query=${encodeURIComponent(query)}`;
         
         console.log('Making search request to:', endpoint);
         const response = await axios.get(endpoint);
