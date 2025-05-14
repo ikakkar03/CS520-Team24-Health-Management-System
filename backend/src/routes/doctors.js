@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Search doctors by name or email
+// Search doctors
 router.get('/search', async (req, res) => {
   try {
     const { query } = req.query;
@@ -31,11 +31,12 @@ router.get('/search', async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT id, first_name, last_name, email, specialization, phone_number 
+      `SELECT id, first_name, last_name, email, specialization 
        FROM doctors 
        WHERE LOWER(first_name) LIKE LOWER($1) 
        OR LOWER(last_name) LIKE LOWER($1) 
        OR LOWER(email) LIKE LOWER($1)
+       OR LOWER(specialization) LIKE LOWER($1)
        LIMIT 10`,
       [`%${query}%`]
     );

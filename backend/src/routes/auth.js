@@ -21,7 +21,7 @@ router.post(
   [
     body('email').isEmail(),
     body('password').isLength({ min: 6 }),
-    body('role').isIn(['patient', 'doctor', 'admin']),
+    body('role').isIn(['patient', 'doctor']),
     body('firstName').notEmpty(),
     body('lastName').notEmpty(),
     body('dateOfBirth')
@@ -80,7 +80,7 @@ router.post(
       const userResult = await client.query(
         `INSERT INTO users
            (email, password_hash, role, first_name, last_name)
-         VALUES ($1,$2,$3,$4,$5)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING id, email, role, first_name, last_name`,
         [email, hashedPassword, role, firstName, lastName]
       );
@@ -90,10 +90,9 @@ router.post(
       if (role === 'patient') {
         await client.query(
           `INSERT INTO patients
-             (id, first_name, last_name, email, date_of_birth, gender, phone_number)
-           VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+             (first_name, last_name, email, date_of_birth, gender, phone_number)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
           [
-            user.id,
             firstName,
             lastName,
             email,
@@ -107,10 +106,9 @@ router.post(
       else if (role === 'doctor') {
         await client.query(
           `INSERT INTO doctors
-             (id, first_name, last_name, email, specialization, phone_number)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
+             (first_name, last_name, email, specialization, phone_number)
+           VALUES ($1, $2, $3, $4, $5)`,
           [
-            user.id,
             firstName,
             lastName,
             email,
@@ -204,8 +202,8 @@ router.post(
           lastName: user.last_name,
         },
       });
-    } catch (err) {
-      console.error('Error logging in:', err);
+    } catch (error) {
+      console.error('Error logging in:', error);
       res.status(500).json({ message: 'Server error' });
     }
   }

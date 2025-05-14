@@ -126,6 +126,54 @@ describe('Prescriptions Routes', () => {
 
       expect(response.body).toEqual(mockPrescriptions);
     });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/prescriptions/doctor/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
+    });
+  });
+
+  describe('GET /prescriptions/history/:doctorId', () => {
+    it('should return prescription history for a doctor', async () => {
+      const mockPrescriptions = [
+        {
+          id: 1,
+          doctor_id: 1,
+          patient_id: 1,
+          medications: ['Medication A'],
+          notes: 'Take daily',
+          patient_first_name: 'Jane',
+          patient_last_name: 'Doe',
+          deleted_at: '2024-03-20T10:00:00Z'
+        }
+      ];
+
+      pool.query.mockResolvedValueOnce({ rows: mockPrescriptions });
+
+      const response = await request(app)
+        .get('/prescriptions/history/1')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(response.body).toEqual(mockPrescriptions);
+    });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/prescriptions/history/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
+    });
   });
 
   describe('GET /prescriptions/patient/:patientId', () => {
@@ -150,6 +198,54 @@ describe('Prescriptions Routes', () => {
         .expect(200);
 
       expect(response.body).toEqual(mockPrescriptions);
+    });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/prescriptions/patient/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
+    });
+  });
+
+  describe('GET /prescriptions/patient/history/:patientId', () => {
+    it('should return prescription history for a patient', async () => {
+      const mockPrescriptions = [
+        {
+          id: 1,
+          doctor_id: 1,
+          patient_id: 1,
+          medications: ['Medication A'],
+          notes: 'Take daily',
+          doctor_first_name: 'Dr. John',
+          doctor_last_name: 'Smith',
+          deleted_at: '2024-03-20T10:00:00Z'
+        }
+      ];
+
+      pool.query.mockResolvedValueOnce({ rows: mockPrescriptions });
+
+      const response = await request(app)
+        .get('/prescriptions/patient/history/1')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(response.body).toEqual(mockPrescriptions);
+    });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/prescriptions/patient/history/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
     });
   });
 
@@ -267,6 +363,17 @@ describe('Prescriptions Routes', () => {
 
       expect(response.body).toEqual({ message: 'Prescription not found' });
     });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .get('/prescriptions/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
+    });
   });
 
   describe('DELETE /prescriptions/:id', () => {
@@ -292,6 +399,17 @@ describe('Prescriptions Routes', () => {
         .expect(404);
 
       expect(response.body).toEqual({ message: 'Prescription not found' });
+    });
+
+    it('should handle server errors', async () => {
+      pool.query.mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await request(app)
+        .delete('/prescriptions/1')
+        .expect('Content-Type', /json/)
+        .expect(500);
+
+      expect(response.body).toEqual({ message: 'Server error' });
     });
   });
 }); 
