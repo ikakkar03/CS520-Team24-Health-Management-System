@@ -13,6 +13,7 @@ const patientsRoutes = require('./routes/patients');
 const appointmentsRoutes = require('./routes/appointments');
 const prescriptionsRoutes = require('./routes/prescriptions');
 const messagesRoutes = require('./routes/messages');
+const refillRequestsRoutes = require('./routes/refillRequests');
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/patients', patientsRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/prescriptions', prescriptionsRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/refill-requests', refillRequestsRoutes);
 
 // Basic health-check
 app.get('/', (req, res) => {
