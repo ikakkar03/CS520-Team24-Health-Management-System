@@ -5,10 +5,10 @@ import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
 import Signup from "./pages/Signup";
 import AppointmentsList from "./pages/AppointmentsList";
-import PrescriptionsList from "./pages/PrescriptionsList";
+import PatientPrescriptions from "./pages/PatientPrescriptions";
+import DoctorPrescriptions from "./pages/DoctorPrescriptions";
 import PatientDashboard from "./components/patient/dashboard/Dashboard";
 import DoctorDashboard from "./components/doctor/dashboard/Dashboard";
-import PrescriptionPatient from "./components/patient/dashboard/Pescription";
 import MessagingPage from "./pages/MessagingPage";
 
 const ProtectedRoute = ({ children }) => {
@@ -31,7 +31,7 @@ export default function App() {
       {/* Private */}
       {user && (
         <Route path="/*" element={<Layout />}>
-          {/* Shared pages */}
+          {/* Appointments (shared) */}
           <Route
             path="appointments"
             element={
@@ -40,14 +40,22 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Prescriptions */}
           <Route
             path="prescriptions"
             element={
               <ProtectedRoute>
-                {user.role === "patient" ? <PrescriptionPatient /> : <PrescriptionsList />}
+                {user.role === "patient" ? (
+                  <PatientPrescriptions />
+                ) : (
+                  <DoctorPrescriptions />
+                )}
               </ProtectedRoute>
             }
           />
+
+          {/* Messaging */}
           <Route
             path="messages"
             element={
@@ -57,7 +65,7 @@ export default function App() {
             }
           />
 
-          {/* Dashboards */}
+          {/* Dashboard */}
           {user.role === "doctor" && (
             <Route
               path="dashboard"
@@ -79,18 +87,16 @@ export default function App() {
             />
           )}
 
-          {/* Redirects */}
+          {/* Redirect defaults */}
           <Route index element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
       )}
 
-      {/* Fallback for non-auth’d */}
+      {/* Fallback */}
       <Route
         path="*"
-        element={
-          <Navigate to={user ? "/dashboard" : "/"} replace />
-        }
+        element={<Navigate to={user ? "/dashboard" : "/"} replace />}
       />
     </Routes>
   );

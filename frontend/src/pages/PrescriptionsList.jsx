@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import SearchDropdown from "../components/SearchDropdown";
 import { useAuth } from "../context/AuthContext";
-
-// Add the backend base URL
-const BACKEND_URL = 'http://localhost:5000';
+import { API_URL } from "../constants";
 
 export default function PrescriptionsList() {
   const { user } = useAuth();
