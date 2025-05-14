@@ -203,7 +203,6 @@ router.get('/patient/history/:patientId', async (req, res) => {
 router.post(
   '/',
   [
-    body('doctorId').isInt(),
     body('patientId').isInt(),
     body('medications').isArray({ min: 1 }),
     body('medications.*.medicationName').notEmpty(),
@@ -218,12 +217,10 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { doctorId, patientId, medications, notes } = req.body;
+    const doctorId = req.doctorId
+    const { patientId, medications, notes } = req.body;
     
     try {
-      // verify doctor & patient exist
-      const doc = await pool.query('SELECT 1 FROM doctors WHERE id=$1', [doctorId]);
-      if (!doc.rows.length) return res.status(404).json({ message: 'Doctor not found' });
       
       const pat = await pool.query('SELECT 1 FROM patients WHERE id=$1', [patientId]);
       if (!pat.rows.length) return res.status(404).json({ message: 'Patient not found' });
