@@ -1,39 +1,51 @@
-import React from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
+import { LogOut } from 'lucide-react';
 
-const DoctorDashboard = () => {
-  const { user } = useAuth();
+
+export default function DoctorDashboard() {
+  const { user, logout } = useAuth();
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Doctor Dashboard</h1>
-      
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Welcome, Dr. {user?.firstName || 'Doctor'}</h2>
-        <p className="text-gray-700 mb-4">
-          This is your doctor dashboard where you can manage patient appointments, 
-          create prescriptions, and communicate with your patients.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-blue-700">Patient Appointments</h3>
-            <p className="text-gray-600 mt-2">View and manage your scheduled appointments</p>
-          </div>
-          
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-medium text-green-700">Write Prescriptions</h3>
-            <p className="text-gray-600 mt-2">Create and manage patient prescriptions</p>
-          </div>
-          
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-medium text-purple-700">Patient Messages</h3>
-            <p className="text-gray-600 mt-2">Communicate with your patients</p>
-          </div>
+    <div className="min-h-screen bg-gray-100">
+      <header className="flex items-center justify-between p-4 bg-white shadow">
+        <h1 className="text-2xl font-bold text-blue-600">HMS</h1>
+        <button onClick={logout} className="p-2">
+          <LogOut className="h-6 w-6 text-gray-600" />
+        </button>
+      </header>
+
+      <main className="container mx-auto p-6">
+        <h2 className="text-3xl font-semibold mb-6">Doctor Dashboard</h2>
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-3">
+          <Link
+            to="/appointments"
+            className="group block p-6 bg-blue-50 hover:bg-blue-100 rounded-lg shadow"
+          >
+            <h3 className="text-xl font-medium text-blue-700 group-hover:underline">
+              Patient Appointments
+            </h3>
+          </Link>
+
+          <Link
+            to="/prescriptions"
+            className="group block p-6 bg-green-50 hover:bg-green-100 rounded-lg shadow"
+          >
+            <h3 className="text-xl font-medium text-green-700 group-hover:underline">
+              Write Prescriptions
+            </h3>
+          </Link>
+
+          <Link
+            to="/messages"
+            className="group block p-6 bg-purple-50 hover:bg-purple-100 rounded-lg shadow"
+          >
+            <h3 className="text-xl font-medium text-purple-700 group-hover:underline">
+              Patient Messages
+            </h3>
+          </Link>
         </div>
-      </div>
+      </main>
     </div>
   );
-};
-
-export default DoctorDashboard;
+}
