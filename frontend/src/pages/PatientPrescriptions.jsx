@@ -9,6 +9,7 @@ export default function PatientPrescriptions() {
   const [history, setHistory]   = useState([]);
   const [error, setError]       = useState('');
   const [tab, setTab]           = useState('active'); // 'active' | 'history'
+  const [patientId, setPatientId] = useState(null);
 
   useEffect(() => {
     if (user?.role !== 'patient') return;
@@ -22,11 +23,11 @@ export default function PatientPrescriptions() {
         );
         if (!pRes.ok) throw new Error('Failed to fetch patient info');
         const patient = await pRes.json();
-        const pid = patient.id;
+        setPatientId(patient.id);
 
         // 2) fetch active prescriptions
         const aRes = await fetch(
-          `${API_URL}/api/prescriptions/patient/${pid}`,
+          `${API_URL}/api/prescriptions/patient/${patient.id}`,
           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
         );
         if (!aRes.ok) throw new Error('Failed to fetch current prescriptions');
@@ -35,7 +36,7 @@ export default function PatientPrescriptions() {
 
         // 3) fetch prescription history
         const hRes = await fetch(
-          `${API_URL}/api/prescriptions/patient/history/${pid}`,
+          `${API_URL}/api/prescriptions/patient/history/${patient.id}`,
           { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
         );
         if (!hRes.ok) throw new Error('Failed to fetch prescription history');
@@ -47,6 +48,31 @@ export default function PatientPrescriptions() {
       }
     })();
   }, [user]);
+
+  const requestRefill = async (prescriptionId) => {
+    try {
+      const res = await fetch(`${API_URL}/api/refill-requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          prescription_id: prescriptionId,
+          patient_id: patientId
+        })
+      });
+      
+      if (!res.ok) throw new Error('Failed to request refill');
+      
+      // Show success message
+      setError('');
+      alert('Refill request submitted successfully');
+    } catch (err) {
+      console.error('Error requesting refill:', err);
+      setError(err.message);
+    }
+  };
 
   if (user?.role !== 'patient') {
     return (
@@ -103,9 +129,15 @@ export default function PatientPrescriptions() {
                 {presc.instructions && (
                   <p className="text-sm italic mb-2">Notes: {presc.instructions}</p>
                 )}
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 mb-4">
                   Prescribed on: {new Date(presc.created_at).toLocaleDateString()}
                 </p>
+                <button
+                  onClick={() => requestRefill(presc.id)}
+                  className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Request Refill
+                </button>
               </Card>
             ))}
           </div>
